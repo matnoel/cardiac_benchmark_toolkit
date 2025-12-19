@@ -80,7 +80,7 @@ This repository provides a tagged ellipsoid geometry for reference purposes in t
 Using the mesh `./monoventricle_mesh/ellipsoid_0.005.xdmf`, you can create the fibers as follows:
 
 ```shell
-cardiac-benchamrk-toolkit create-fibers-for-ellipsoid-mesh ./monoventricle_mesh/ellipsoid_0.005.xdmf
+cardiac-benchmark-toolkit create-fibers-for-ellipsoid-mesh ./monoventricle_mesh/ellipsoid_0.005.xdmf
 ```
 
 If succesfull, the script will create fibers in `xdmf` and `vtk` files in a `./results/` folder.
