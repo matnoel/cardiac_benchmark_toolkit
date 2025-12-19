@@ -28,6 +28,7 @@ class FiberDirections:
     fiber: Function
     sheet: Function
     sheet_normal: Function
+    transmural_distance: Function
 
 
 class FiberExpression(UserExpression):
@@ -198,7 +199,7 @@ def transmural_distance_problem(
     lhs = dot(grad(u), grad(v)) * dx
     rhs = v * Constant(0) * dx
 
-    transmural_distance = Function(T, name="transmural")
+    transmural_distance = Function(T, name="t0")
 
     endo_bc = DirichletBC(T, Constant(0), mesh_function, MARKERS.ENDOCARDIUM)
     epi_bc = DirichletBC(T, Constant(1), mesh_function, MARKERS.EPICARDIUM)
@@ -216,9 +217,7 @@ def build_orientations(
 ) -> FiberDirections:
 
     fiber_expression = FiberExpression(transmural_distance, degree=degree)
-    sheet_normal_expression = SheetNormalExpression(
-        transmural_distance, degree=degree
-    )
+    sheet_normal_expression = SheetNormalExpression(transmural_distance, degree=degree)
     sheet_expression = SheetExpression(
         fiber=fiber_expression,
         sheet_normal=sheet_normal_expression,
@@ -235,15 +234,15 @@ def build_orientations(
     s0.assign(interpolate(sheet_expression, fibers_function_space))
     n0.assign(interpolate(sheet_normal_expression, fibers_function_space))
 
-    fiber_directions = FiberDirections(fiber=f0, sheet=s0, sheet_normal=n0)
+    fiber_directions = FiberDirections(
+        fiber=f0, sheet=s0, sheet_normal=n0, transmural_distance=transmural_distance
+    )
     print("built fiber, sheet and sheet_normal directions")
 
     return fiber_directions
 
 
-def save_mesh_to_files(
-    mesh: Mesh, bnds: MeshFunction, path_to_save: str
-) -> None:
+def save_mesh_to_files(mesh: Mesh, bnds: MeshFunction, path_to_save: str) -> None:
     path = pathlib.Path(path_to_save)
     path.mkdir(parents=True, exist_ok=True)
 
@@ -259,8 +258,13 @@ def save_fibers_to_files(fibers: FiberDirections, path_to_save: str) -> None:
     path = pathlib.Path(path_to_save)
     path.mkdir(parents=True, exist_ok=True)
 
-    directions = [fibers.fiber, fibers.sheet, fibers.sheet_normal]
-    names = ["fiber", "sheet", "sheet_normal"]
+    directions = [
+        fibers.fiber,
+        fibers.sheet,
+        fibers.sheet_normal,
+        fibers.transmural_distance,
+    ]
+    names = ["fiber", "sheet", "sheet_normal", "transmural_distance"]
 
     for name, direction in zip(names, directions):
         path_to_h5 = path.joinpath(f"xdmf_format/ellipsoid_{name}.h5")
