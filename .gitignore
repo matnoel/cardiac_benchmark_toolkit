@@ -158,3 +158,5 @@ meshes/
 # ignore png
 *.png
 **/*.png
+
+.DS_Store
